@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConvectX | AI Convective Scale Nowcasting (SIH26084)</title>
+  
+  <!-- Leaflet CSS for India GIS Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="theme-obsidian">
+
+  <!-- TOP RUN DEMO / NOTIFICATION BANNER -->
+  <div id="demo-banner" class="demo-banner hidden">
+    <div class="demo-badge">DEMO IN PROGRESS</div>
+    <span id="demo-step-text">Initializing ConvectX Guided Walkthrough...</span>
+    <button class="btn-xs btn-outline" onclick="cancelDemo()">Stop Demo</button>
+  </div>
+
+  <!-- TOP TELEMETRY STATUS BAR -->
+  <header class="top-status-bar">
+    <div class="status-group">
+      <div class="logo-box">
+        <i data-lucide="zap" class="icon-brand"></i>
+        <span class="brand-name">Convect<strong>X</strong></span>
+        <span class="sub-brand">SIH26084</span>
+      </div>
+      <span class="badge-prototype">PROTOTYPE / MODEL ESTIMATE</span>
+    </div>
+
+    <div class="telemetry-pills">
+      <div class="pill">
+        <span class="pill-label">Observation:</span>
+        <span class="pill-val">14:00 IST</span>
+      </div>
+      <div class="pill">
+        <span class="pill-label">Horizon:</span>
+        <span class="pill-val text-emerald">0–6 Hours</span>
+      </div>
+      <div class="pill">
+        <span class="pill-label">Data Feed:</span>
+        <span class="pill-val">Simulated Grid</span>
+      </div>
+      <div class="pill">
+        <span class="pill-label">AI Engine:</span>
+        <span class="pill-val text-emerald"><span class="dot-live"></span> Ready</span>
+      </div>
+      <div class="pill desktop-only">
+        <span class="pill-label">Update:</span>
+        <span class="pill-val">2 min ago</span>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button class="btn-demo" onclick="triggerJudgeDemo()">
+        <i data-lucide="play-circle"></i>
+        <span>RUN DEMO</span>
+      </button>
+      <button class="btn-presentation" id="btn-pres" onclick="togglePresentationMode()">
+        <i data-lucide="monitor"></i>
+        <span class="desktop-only">Presentation Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="main-nav">
+    <div class="nav-links">
+      <button class="nav-item active" data-tab="tab-nowcast" onclick="switchTab('tab-nowcast')">
+        <i data-lucide="radar"></i> Live Nowcast
+      </button>
+      <button class="nav-item" data-tab="tab-pipeline" onclick="switchTab('tab-pipeline')">
+        <i data-lucide="git-merge"></i> AI Architecture & CI
+      </button>
+      <button class="nav-item" data-tab="tab-regions" onclick="switchTab('tab-regions')">
+        <i data-lucide="map-pin"></i> India Vulnerability
+      </button>
+      <button class="nav-item" data-tab="tab-replay" onclick="switchTab('tab-replay')">
+        <i data-lucide="history"></i> Historical Replay
+      </button>
+      <button class="nav-item" data-tab="tab-analytics" onclick="switchTab('tab-analytics')">
+        <i data-lucide="activity"></i> Model Performance
+      </button>
+      <button class="nav-item" data-tab="tab-status" onclick="switchTab('tab-status')">
+        <i data-lucide="server"></i> System Status
+      </button>
+      <button class="nav-item" data-tab="tab-about" onclick="switchTab('tab-about')">
+        <i data-lucide="info"></i> About SIH26084
+      </button>
+    </div>
+  </nav>
+
+  <!-- STORYLINE STEP TRACKER (SIH JUDGE CONTEXT) -->
+  <div class="sih-story-strip">
+    <div class="story-step" title="Multi-source ingestion"><span>1</span> OBSERVE</div>
+    <i data-lucide="chevron-right" class="arrow"></i>
+    <div class="story-step" title="Temporal-spatial harmonization"><span>2</span> FUSE DATA</div>
+    <i data-lucide="chevron-right" class="arrow"></i>
+    <div class="story-step active" title="Rapid cloud cooling & radar gradients"><span>3</span> DETECT CI</div>
+    <i data-lucide="chevron-right" class="arrow"></i>
+    <div class="story-step" title="0-6 Hr spatio-temporal deep learning"><span>4</span> AI NOWCAST</div>
+    <i data-lucide="chevron-right" class="arrow"></i>
+    <div class="story-step" title="Probabilistic hazard thresholds"><span>5</span> PREDICT HAZARDS</div>
+    <i data-lucide="chevron-right" class="arrow"></i>
+    <div class="story-step" title="Centroid advection & cone"><span>6</span> TRACK STORM</div>
+    <i data-lucide="chevron-right" class="arrow"></i>
+    <div class="story-step" title="Localized pinpoint vulnerability"><span>7</span> LOCATION RISK</div>
+    <i data-lucide="chevron-right" class="arrow"></i>
+    <div class="story-step" title="Automated early warning trigger"><span>8</span> GENERATE ALERT</div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="app-main-content">
+    
+    <!-- ==============================================
+         TAB 1: LIVE NOWCAST & COMMAND CENTER
+         ============================================== -->
+    <div id="tab-nowcast" class="view-panel active">
+      
+      <!-- HERO & 4 KPI CARDS -->
+      <section class="hero-strip">
+        <div class="hero-text">
+          <h1>AI-Powered 0–6 Hour Convective Weather Nowcasting</h1>
+          <p>Multi-source weather intelligence for early detection, tracking and location-based severe weather risk across India.</p>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>Active Storm Cells</span>
+              <i data-lucide="cloud-lightning" class="text-amber"></i>
+            </div>
+            <div class="kpi-value text-amber" id="kpi-cells">07</div>
+            <div class="kpi-sub">Tracked by AI • <span class="label-demo">Demo</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>High-Risk Locations</span>
+              <i data-lucide="alert-triangle" class="text-crimson"></i>
+            </div>
+            <div class="kpi-value text-crimson" id="kpi-risk-locs">12</div>
+            <div class="kpi-sub">Cities under watch • <span class="label-demo">Demo</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>Lightning Activity</span>
+              <i data-lucide="zap" class="text-amber"></i>
+            </div>
+            <div class="kpi-value text-amber" id="kpi-lightning">184/min</div>
+            <div class="kpi-sub">Surge detected • <span class="label-demo">Demo</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>Heavy Rainfall Risk</span>
+              <i data-lucide="cloud-rain" class="text-emerald"></i>
+            </div>
+            <div class="kpi-value text-emerald" id="kpi-rain-prob">64%</div>
+            <div class="kpi-sub">Target: Gangetic Belt • <span class="label-demo">Demo</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GIS DASHBOARD & SIDE PANELS -->
+      <div class="gis-grid">
+        
+        <!-- LEFT: MAP COMMAND CENTER -->
+        <div class="gis-map-container card-panel">
+          <div class="map-header">
+            <div class="map-title-row">
+              <span class="live-dot-green"></span>
+              <h3>India Convective Radar & Storm Tracking Field</h3>
+              <span class="badge-subtle">GeoJSON & Doppler Fusion</span>
+            </div>
+            <div class="map-toolbar">
+              <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="map-search-input" placeholder="Search city (e.g. Prayagraj, Dehradun)..." />
+                <button class="btn-search" onclick="searchMapLocation()"><i data-lucide="arrow-right"></i></button>
+              </div>
+              <button class="btn-icon" title="Reset View to India" onclick="resetMapCenter()"><i data-lucide="crosshair"></i></button>
+            </div>
+          </div>
+
+          <!-- MAP VIEWPORT -->
+          <div id="gis-map" class="gis-map-element"></div>
+
+          <!-- MAP FLOATING LAYER TOGGLES -->
+          <div class="map-layer-box">
+            <div class="layer-title"><i data-lucide="layers"></i> Layer Toggles</div>
+            <label class="layer-item"><input type="checkbox" id="layer-risk" checked onchange="toggleLayers()"> Thunderstorm Risk Grid</label>
+            <label class="layer-item"><input type="checkbox" id="layer-lightning" checked onchange="toggleLayers()"> Lightning Discharge</label>
+            <label class="layer-item"><input type="checkbox" id="layer-rain" checked onchange="toggleLayers()"> Heavy Rainfall Swath</label>
+            <label class="layer-item"><input type="checkbox" id="layer-tracks" checked onchange="toggleLayers()"> Storm Trajectory Track</label>
+            <label class="layer-item"><input type="checkbox" id="layer-hail" onchange="toggleLayers()"> Hail Risk Footprint</label>
+            <label class="layer-item"><input type="checkbox" id="layer-wind" onchange="toggleLayers()"> Gust Fronts & Wind</label>
+            <label class="layer-item"><input type="checkbox" id="layer-radar" onchange="toggleLayers()"> Synthetic Doppler (dBZ)</label>
+          </div>
+
+          <!-- FORECAST TIMELINE CONTROLLER -->
+          <div class="timeline-controller">
+            <div class="timeline-header">
+              <div class="timeline-status">
+                <i data-lucide="clock"></i>
+                <span>Forecast Horizon: <strong id="timeline-display-time">NOW (14:00 IST)</strong></span>
+              </div>
+              <span class="timeline-note">AI spatial inference recalibrated at every horizon</span>
+            </div>
+            <div class="timeline-stepper" id="timeline-buttons">
+              <button class="step-btn active" onclick="setForecastTime(0, 'NOW (14:00 IST)')">NOW</button>
+              <button class="step-btn" onclick="setForecastTime(30, '+30 MIN (14:30 IST)')">+30 MIN</button>
+              <button class="step-btn" onclick="setForecastTime(60, '+1 HR (15:00 IST)')">+1 HR</button>
+              <button class="step-btn" onclick="setForecastTime(120, '+2 HR (16:00 IST)')">+2 HR</button>
+              <button class="step-btn" onclick="setForecastTime(180, '+3 HR (17:00 IST)')">+3 HR</button>
+              <button class="step-btn" onclick="setForecastTime(240, '+4 HR (18:00 IST)')">+4 HR</button>
+              <button class="step-btn" onclick="setForecastTime(300, '+5 HR (19:00 IST)')">+5 HR</button>
+              <button class="step-btn" onclick="setForecastTime(360, '+6 HR (20:00 IST)')">+6 HR</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: LIVE WEATHER INTELLIGENCE STACK -->
+        <div class="gis-side-stack">
+          
+          <!-- CONVECTIVE INITIATION (CI) DETECTION PANEL -->
+          <div class="card-panel ci-panel">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="flame" class="text-amber"></i>
+                <h4>CONVECTIVE INITIATION DETECTION</h4>
+              </div>
+              <span class="badge-status-high">HIGH CI RISK</span>
+            </div>
+            <p class="ci-summary">
+              Rapid cloud-top cooling + increasing radar intensity + rising lightning activity detected across consecutive observations.
+            </p>
+            <div class="ci-signals">
+              <div class="ci-signal-item">
+                <div class="sig-header">
+                  <span>Radar Reflectivity Gradient</span>
+                  <strong class="text-amber">82%</strong>
+                </div>
+                <div class="progress-bar"><div class="fill amber" style="width: 82%;"></div></div>
+              </div>
+              <div class="ci-signal-item">
+                <div class="sig-header">
+                  <span>Satellite Cloud-Top Cooling (-4.2°C/15m)</span>
+                  <strong class="text-emerald">74%</strong>
+                </div>
+                <div class="progress-bar"><div class="fill emerald" style="width: 74%;"></div></div>
+              </div>
+              <div class="ci-signal-item">
+                <div class="sig-header">
+                  <span>Lightning Jump Index</span>
+                  <strong class="text-crimson">88%</strong>
+                </div>
+                <div class="progress-bar"><div class="fill crimson" style="width: 88%;"></div></div>
+              </div>
+              <div class="ci-signal-item">
+                <div class="sig-header">
+                  <span>Storm Persistence / CAPE Overlap</span>
+                  <strong class="text-amber">76%</strong>
+                </div>
+                <div class="progress-bar"><div class="fill amber" style="width: 76%;"></div></div>
+              </div>
+            </div>
+            <div class="ci-verdict">
+              <i data-lucide="alert-octagon" class="text-crimson"></i>
+              <span><strong>DEVELOPING CONVECTION DETECTED</strong>: Cell #A102 undergoing explosive vertical ascent.</span>
+            </div>
+          </div>
+
+          <!-- CHECK LOCATION RISK -->
+          <div class="card-panel location-panel">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="crosshair" class="text-emerald"></i>
+                <h4>CHECK LOCATION RISK</h4>
+              </div>
+              <span class="badge-subtle">Pinpoint Risk</span>
+            </div>
+
+            <div class="loc-coords-bar">
+              <div class="loc-name">
+                <i data-lucide="map-pin" class="text-amber"></i>
+                <span id="loc-display-name">Prayagraj, Uttar Pradesh</span>
+              </div>
+              <div class="loc-latlng" id="loc-display-coords">25.4358° N, 81.8463° E</div>
+            </div>
+
+            <div class="risk-highlight-card risk-border-high">
+              <div class="risk-main-row">
+                <div>
+                  <div class="sub-label">Current Location Risk</div>
+                  <div class="risk-level-tag text-crimson" id="loc-risk-level">HIGH HAZARD</div>
+                </div>
+                <div class="eta-box">
+                  <div class="sub-label">Estimated Storm Arrival</div>
+                  <div class="eta-value" id="loc-storm-arrival">~42 min</div>
+                </div>
+              </div>
+              <div class="risk-meta-row">
+                <span>Vector: <strong id="loc-storm-vector">NE at 32 km/h</strong></span>
+                <span>Confidence: <strong class="text-amber" id="loc-confidence">Medium (78%)</strong></span>
+              </div>
+            </div>
+
+            <!-- 5 Hazard Percentages -->
+            <div class="hazards-sub-grid">
+              <div class="haz-pill">
+                <span class="haz-title">Thunderstorm</span>
+                <span class="haz-val text-crimson" id="prob-ts">78%</span>
+                <span class="haz-lvl lvl-high">HIGH</span>
+              </div>
+              <div class="haz-pill">
+                <span class="haz-title">Lightning</span>
+                <span class="haz-val text-crimson" id="prob-lt">71%</span>
+                <span class="haz-lvl lvl-high">HIGH</span>
+              </div>
+              <div class="haz-pill">
+                <span class="haz-title">Heavy Rain</span>
+                <span class="haz-val text-amber" id="prob-rn">54%</span>
+                <span class="haz-lvl lvl-mod">MODERATE</span>
+              </div>
+              <div class="haz-pill">
+                <span class="haz-title">Hail Risk</span>
+                <span class="haz-val text-emerald" id="prob-hl">22%</span>
+                <span class="haz-lvl lvl-low">LOW</span>
+              </div>
+              <div class="haz-pill">
+                <span class="haz-title">Strong Wind</span>
+                <span class="haz-val text-amber" id="prob-wd">48%</span>
+                <span class="haz-lvl lvl-mod">MODERATE</span>
+              </div>
+            </div>
+            <div class="model-note">* Approximate prototype model estimate. Click anywhere on the map to query coordinates.</div>
+          </div>
+
+          <!-- STORM CELL INSPECTOR -->
+          <div class="card-panel cell-panel">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="compass" class="text-amber"></i>
+                <h4 id="cell-name-title">STORM CELL #A102 TRACKING</h4>
+              </div>
+              <span class="badge-status-high" id="cell-sev-badge">SEVERE</span>
+            </div>
+            <div class="cell-stats-grid">
+              <div class="cell-stat">
+                <span class="sub-label">Movement</span>
+                <strong id="cell-movement">NE (45°)</strong>
+              </div>
+              <div class="cell-stat">
+                <span class="sub-label">Translation Speed</span>
+                <strong id="cell-speed">32 km/h</strong>
+              </div>
+              <div class="cell-stat">
+                <span class="sub-label">Target Arrival</span>
+                <strong id="cell-arrival">42 min</strong>
+              </div>
+              <div class="cell-stat">
+                <span class="sub-label">Max Reflectivity</span>
+                <strong class="text-crimson" id="cell-dbz">56 dBZ</strong>
+              </div>
+            </div>
+            <div class="track-flow">
+              <div class="track-step">CURRENT (14:00)</div>
+              <i data-lucide="arrow-down" class="text-muted"></i>
+              <div class="track-step">PREDICTED POSITIONS (+30m, +1h, +2h)</div>
+              <i data-lucide="arrow-down" class="text-muted"></i>
+              <div class="track-step highlight">CONE OF UNCERTAINTY (±12 km)</div>
+            </div>
+          </div>
+
+          <!-- EXPLAINABLE AI (WHY IS THIS AREA HIGH RISK?) -->
+          <div class="card-panel xai-panel">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="brain" class="text-emerald"></i>
+                <h4>WHY IS THIS AREA HIGH RISK? (XAI)</h4>
+              </div>
+              <span class="badge-subtle">Feature Attribution</span>
+            </div>
+            <div class="xai-factors">
+              <div class="xai-row">
+                <span class="factor-name">+32% Lightning Growth Rate</span>
+                <div class="xai-bar"><div class="fill crimson" style="width: 32%;"></div></div>
+              </div>
+              <div class="xai-row">
+                <span class="factor-name">+24% Radar Core Gradient (Vertically Integrated Liquid)</span>
+                <div class="xai-bar"><div class="fill amber" style="width: 24%;"></div></div>
+              </div>
+              <div class="xai-row">
+                <span class="factor-name">+18% Satellite Cloud-Top Rapid Cooling Signature</span>
+                <div class="xai-bar"><div class="fill emerald" style="width: 18%;"></div></div>
+              </div>
+              <div class="xai-row">
+                <span class="factor-name">+14% Upwind Atmospheric Stability & CAPE Overlap</span>
+                <div class="xai-bar"><div class="fill emerald" style="width: 14%;"></div></div>
+              </div>
+              <div class="xai-row">
+                <span class="factor-name">+12% Topographic Convergence & Surface Moisture Flux</span>
+                <div class="xai-bar"><div class="fill emerald" style="width: 12%;"></div></div>
+              </div>
+            </div>
+            <div class="xai-conclusion">
+              <i data-lucide="check-circle" class="text-emerald"></i>
+              <span><strong>Combined Signals</strong> indicate explosive convective development within the next 45 minutes along the Gangetic shear line.</span>
+            </div>
+            <div class="model-note">* Illustrative prototype explanation, not an official operational attribution.</div>
+          </div>
+
+          <!-- ACTIVE EARLY WARNING ALERTS -->
+          <div class="card-panel alerts-panel">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="bell" class="text-crimson"></i>
+                <h4>AUTOMATED EARLY WARNINGS</h4>
+              </div>
+              <span class="badge-status-high">2 ACTIVE</span>
+            </div>
+
+            <!-- Alert 1 -->
+            <div class="alert-box alert-extreme">
+              <div class="alert-top">
+                <span class="alert-tag text-crimson">HIGH ALERT • SEVERE CONVECTION</span>
+                <span class="alert-time">Valid 15:20–16:10 IST</span>
+              </div>
+              <div class="alert-body">
+                <strong>Affected Area:</strong> Prayagraj District & 32 km radius corridor.<br />
+                <strong>Expected Hazards:</strong> Severe Thunderstorm + Cloud-to-Ground Lightning Surge + Torrential Rainfall (&gt;45 mm/hr).<br />
+                <strong>Status:</strong> AI model-generated early warning estimate.
+              </div>
+            </div>
+
+            <!-- Alert 2 -->
+            <div class="alert-box alert-warning">
+              <div class="alert-top">
+                <span class="alert-tag text-amber">MODERATE ALERT • HIMALAYAN FLASH RUNOFF</span>
+                <span class="alert-time">Valid 16:00–18:30 IST</span>
+              </div>
+              <div class="alert-body">
+                <strong>Affected Area:</strong> Dehradun–Rishikesh valley pocket.<br />
+                <strong>Expected Hazards:</strong> Localized Convective Downpours with micro-basin saturation.<br />
+                <strong>Status:</strong> AI model-generated early warning estimate.
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- /gis-side-stack -->
+      </div> <!-- /gis-grid -->
+    </div> <!-- /tab-nowcast -->
+
+
+    <!-- ==============================================
+         TAB 2: AI PIPELINE & CONVECTIVE ARCHITECTURE
+         ============================================== -->
+    <div id="tab-pipeline" class="view-panel">
+      <div class="card-panel mb-lg">
+        <div class="card-header">
+          <div>
+            <h3>ConvectX AI Nowcasting Pipeline (0–6 Hours)</h3>
+            <p class="section-desc">Click any stage to inspect how raw physical observations are harmonized and fed into the deep learning nowcast engine.</p>
+          </div>
+          <span class="badge-prototype">SIH26084 SYSTEM ARCHITECTURE</span>
+        </div>
+
+        <!-- CLICKABLE HORIZONTAL PIPELINE -->
+        <div class="pipeline-flow">
+          <div class="pipe-node active" onclick="showPipelineDetail('observe')">
+            <div class="pipe-num">1</div>
+            <div class="pipe-name">OBSERVE</div>
+            <div class="pipe-sub">Multi-sensor feeds</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('fusion')">
+            <div class="pipe-num">2</div>
+            <div class="pipe-name">DATA FUSION</div>
+            <div class="pipe-sub">Spatial-temporal mesh</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('preprocess')">
+            <div class="pipe-num">3</div>
+            <div class="pipe-name">PREPROCESS</div>
+            <div class="pipe-sub">QC & interpolation</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('ci')">
+            <div class="pipe-num">4</div>
+            <div class="pipe-name">CI DETECTION</div>
+            <div class="pipe-sub">Explosive updrafts</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('nowcast')">
+            <div class="pipe-num">5</div>
+            <div class="pipe-name">AI NOWCAST</div>
+            <div class="pipe-sub">Spatio-temporal NN</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('risk')">
+            <div class="pipe-num">6</div>
+            <div class="pipe-name">RISK ENGINE</div>
+            <div class="pipe-sub">Platt calibration</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('tracking')">
+            <div class="pipe-num">7</div>
+            <div class="pipe-name">STORM TRACKING</div>
+            <div class="pipe-sub">TITAN / Advection</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('gis')">
+            <div class="pipe-num">8</div>
+            <div class="pipe-name">GIS VISUALIZATION</div>
+            <div class="pipe-sub">PostGIS geo-tiles</div>
+          </div>
+          <div class="pipe-arrow"><i data-lucide="chevron-right"></i></div>
+
+          <div class="pipe-node" onclick="showPipelineDetail('alert')">
+            <div class="pipe-num">9</div>
+            <div class="pipe-name">ALERT DISSEMINATION</div>
+            <div class="pipe-sub">Automated CAP warnings</div>
+          </div>
+        </div>
+
+        <!-- PIPELINE DRILLDOWN EXPLANATION BOX -->
+        <div id="pipe-detail-box" class="pipe-detail-box">
+          <div class="pipe-detail-head">
+            <i data-lucide="info" class="text-emerald"></i>
+            <h4 id="pipe-detail-title">STAGE 1: MULTI-SOURCE SENSOR INGESTION (OBSERVE)</h4>
+          </div>
+          <p id="pipe-detail-desc">
+            Collect real-time observational feeds from IMD Doppler Weather Radars (S-band/C-band/X-band reflectivity and radial velocity), INSAT-3D/3DR multispectral satellite imagery (thermal infrared and water vapor channels), Earth Networks ground lightning sensor networks, and automated surface weather stations (AWS/ARG).
+          </p>
+          <div class="pipe-detail-specs" id="pipe-detail-specs">
+            <div class="spec-chip">Latency: &lt; 90 seconds</div>
+            <div class="spec-chip">Resolution: 500m / 5-min</div>
+            <div class="spec-chip">Format: NetCDF4 / HDF5 / BUFR</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MULTI-SOURCE DATA FUSION & RISK CALIBRATION ENGINE -->
+      <div class="two-col-grid">
+        <div class="card-panel">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="database" class="text-emerald"></i>
+              <h4>Multi-Source Ingestion Telemetry</h4>
+            </div>
+            <span class="badge-subtle">Sensors Connected</span>
+          </div>
+          <div class="feed-list">
+            <div class="feed-item">
+              <div class="feed-info">
+                <strong>IMD Doppler Weather Radar (DWR)</strong>
+                <span>Reflectivity (Z), Differential (ZDR), Radial Velocity (V)</span>
+              </div>
+              <span class="badge-live"><span class="dot-live"></span> Connected</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-info">
+                <strong>INSAT-3D / 3DR Geostationary Satellite</strong>
+                <span>TIR-1 (10.8µm), WV (6.8µm), Cloud Top Microphysics</span>
+              </div>
+              <span class="badge-live"><span class="dot-live"></span> Connected</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-info">
+                <strong>Lightning Location Network (LLN)</strong>
+                <span>Total Lightning (Intracloud + Cloud-to-Ground)</span>
+              </div>
+              <span class="badge-live"><span class="dot-live"></span> Connected</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-info">
+                <strong>Surface AWS / Micro-Barograph Mesonet</strong>
+                <span>Dewpoint Depression, 10m Wind Gusts, Pressure Tendency</span>
+              </div>
+              <span class="badge-live"><span class="dot-live"></span> Connected</span>
+            </div>
+          </div>
+          <div class="model-note">* Demo data simulation – operational deployment interfaces with authenticated IMD/ISRO feeds.</div>
+        </div>
+
+        <div class="card-panel">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="sliders" class="text-amber"></i>
+              <h4>ConvectX Risk Engine & Threshold Calibration</h4>
+            </div>
+            <span class="badge-subtle">Platt Calibration</span>
+          </div>
+          <p class="section-desc">
+            Raw deep learning ensemble logits are transformed into calibrated meteorological probabilities using isotonic regression, then mapped to actionable disaster management tiers.
+          </p>
+
+          <div class="risk-bands">
+            <div class="risk-band">
+              <div class="band-tag lvl-low">LOW (&lt;30%)</div>
+              <div class="band-desc">Routine surveillance; isolated showers possible; no immediate convective hazard.</div>
+            </div>
+            <div class="risk-band">
+              <div class="band-tag lvl-mod">MODERATE (30%–60%)</div>
+              <div class="band-desc">Scattered thunderstorms likely; lightning safety protocols advised for open fields.</div>
+            </div>
+            <div class="risk-band">
+              <div class="band-tag lvl-high">HIGH (60%–80%)</div>
+              <div class="band-desc">Severe convective cell confirmed; lightning barrage, hail potential, high local downpours.</div>
+            </div>
+            <div class="risk-band">
+              <div class="band-tag lvl-ext">EXTREME (&gt;80%)</div>
+              <div class="band-desc">Explosive cloudburst / squall line; immediate disaster management alerts issued.</div>
+            </div>
+          </div>
+          <div class="model-note">* Configurable prototype thresholds for SIH evaluation. Validated on IMD historical archive.</div>
+        </div>
+      </div>
+    </div> <!-- /tab-pipeline -->
+
+
+    <!-- ==============================================
+         TAB 3: INDIA REGIONAL VULNERABILITY VIEW
+         ============================================== -->
+    <div id="tab-regions" class="view-panel">
+      <div class="card-panel">
+        <div class="card-header">
+          <div>
+            <h3>India Regional Convective Risk Profiles</h3>
+            <p class="section-desc">Localized convective phenomenology varies drastically across Indian geography. ConvectX adapts its AI feature weights per climatic zone.</p>
+          </div>
+          <span class="badge-prototype">REGIONAL INTELLIGENCE</span>
+        </div>
+
+        <div class="region-cards-grid">
+          
+          <!-- Himalayan Region -->
+          <div class="region-card">
+            <div class="reg-head">
+              <span class="reg-name">Himalayan Region</span>
+              <span class="badge-status-high">CRITICAL</span>
+            </div>
+            <div class="reg-sub">Uttarakhand • Himachal Pradesh • J&amp;K</div>
+            <div class="reg-hazard">Primary Hazard: <strong>Cloudburst &amp; Flash Flood Runoff</strong></div>
+            <p class="reg-p">Orphan orographic updrafts triggered by steep valley convergence. Rapid cloud-top cooling detected &lt;30 min before sudden localized runoff.</p>
+            <div class="reg-tags">
+              <span>Doppler Shadow Compensation</span>
+              <span>Orographic Lifting Index</span>
+            </div>
+          </div>
+
+          <!-- Eastern Gangetic Plains -->
+          <div class="region-card">
+            <div class="reg-head">
+              <span class="reg-name">Eastern Gangetic Plain</span>
+              <span class="badge-status-high">HIGH</span>
+            </div>
+            <div class="reg-sub">Uttar Pradesh • Bihar • West Bengal</div>
+            <div class="reg-hazard">Primary Hazard: <strong>Severe Lightning &amp; Kalbaishakhi (Nor'westers)</strong></div>
+            <p class="reg-p">High CAPE (&gt;2500 J/kg) coupled with dry mid-tropospheric intrusion producing violent squalls and dense cloud-to-ground lightning fatalities.</p>
+            <div class="reg-tags">
+              <span>Lightning Jump Warning</span>
+              <span>Downburst Gust Prediction</span>
+            </div>
+          </div>
+
+          <!-- Northeastern India -->
+          <div class="region-card">
+            <div class="reg-head">
+              <span class="reg-name">Northeastern Valleys</span>
+              <span class="badge-status-high">HIGH</span>
+            </div>
+            <div class="reg-sub">Assam • Meghalaya • Arunachal Pradesh</div>
+            <div class="reg-hazard">Primary Hazard: <strong>Continuous Torrential Downpours</strong></div>
+            <p class="reg-p">Moisture channeling through the Surma and Brahmaputra valleys causing repetitive convective training cells and catastrophic waterlogging.</p>
+            <div class="reg-tags">
+              <span>Echo Training Tracking</span>
+              <span>Precipitable Water Anomaly</span>
+            </div>
+          </div>
+
+          <!-- Northern Plains -->
+          <div class="region-card">
+            <div class="reg-head">
+              <span class="reg-name">Northern Plains</span>
+              <span class="badge-status-mod">MODERATE</span>
+            </div>
+            <div class="reg-sub">Punjab • Haryana • Western UP • Rajasthan</div>
+            <div class="reg-hazard">Primary Hazard: <strong>Dust Storms (Andhi) &amp; Severe Hail</strong></div>
+            <p class="reg-p">Pre-monsoon dry microbursts where strong downdrafts lift surface particulate matter, accompanied by elevated frozen hydrometeors (large hail).</p>
+            <div class="reg-tags">
+              <span>Hail Differential Reflectivity</span>
+              <span>Outflow Boundary Tracking</span>
+            </div>
+          </div>
+
+          <!-- Peninsular Coastal India -->
+          <div class="region-card">
+            <div class="reg-head">
+              <span class="reg-name">Peninsular &amp; Coastal</span>
+              <span class="badge-status-mod">MODERATE</span>
+            </div>
+            <div class="reg-sub">Odisha • Andhra Coast • Western Ghats</div>
+            <div class="reg-hazard">Primary Hazard: <strong>Sea-Breeze Frontal Squalls</strong></div>
+            <p class="reg-p">Interaction between marine moisture boundary and land thermal heating, generating afternoon convective towers within 15 km of shoreline.</p>
+            <div class="reg-tags">
+              <span>Coastal Sea-Breeze Front</span>
+              <span>Doppler Radial Convergence</span>
+            </div>
+          </div>
+
+          <!-- Central Plateau -->
+          <div class="region-card">
+            <div class="reg-head">
+              <span class="reg-name">Central India Plateau</span>
+              <span class="badge-status-low">MONITORED</span>
+            </div>
+            <div class="reg-sub">Madhya Pradesh • Vidarbha • Chhattisgarh</div>
+            <div class="reg-hazard">Primary Hazard: <strong>Isolated Severe Lightning Clusters</strong></div>
+            <p class="reg-p">Diurnal heating clusters with rapid pulse storm characteristics. Short-lived yet intensely electrified convective cores.</p>
+            <div class="reg-tags">
+              <span>Pulse Convection Lifespan</span>
+              <span>CAPE Decay Rate</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="model-note mt-md">* Illustrative prototype regional meteorological visualization for demonstration only.</div>
+      </div>
+    </div> <!-- /tab-regions -->
+
+
+    <!-- ==============================================
+         TAB 4: HISTORICAL REPLAY (VALIDATION)
+         ============================================== -->
+    <div id="tab-replay" class="view-panel">
+      <div class="card-panel">
+        <div class="card-header">
+          <div>
+            <h3>Historical Event Replay & Ground-Truth Verification</h3>
+            <p class="section-desc">Demonstrates how ConvectX retroactively nowcasts historic extreme events versus recorded ground-truth radar observations.</p>
+          </div>
+          <span class="badge-prototype">REPLAY ENGINE</span>
+        </div>
+
+        <div class="replay-controls-bar">
+          <div class="replay-selector">
+            <label>Select Case Study:</label>
+            <select id="replay-case-select" onchange="changeReplayEvent()">
+              <option value="cloudburst">Himalayan Cloudburst Scenario (Uttarakhand)</option>
+              <option value="kalbaishakhi">Severe Kalbaishakhi Nor'wester (West Bengal)</option>
+              <option value="prayagraj">Gangetic Plain Violent Thunderstorm (Prayagraj)</option>
+            </select>
+          </div>
+          <div class="replay-playback">
+            <button class="btn-xs btn-outline" id="replay-play-btn" onclick="toggleReplayPlay()">
+              <i data-lucide="play" id="replay-play-icon"></i> <span id="replay-play-txt">Play Replay</span>
+            </button>
+            <span class="pill-val" id="replay-timer-display">T + 00 min (Initiation)</span>
+          </div>
+        </div>
+
+        <!-- REPLAY TIMELINE STEPPER -->
+        <div class="replay-timeline-strip">
+          <div class="replay-step active">OBSERVATION (T-30m)</div>
+          <i data-lucide="arrow-right"></i>
+          <div class="replay-step active">DEVELOPING CI (T-15m)</div>
+          <i data-lucide="arrow-right"></i>
+          <div class="replay-step active">MODEL FORECAST (T-00m)</div>
+          <i data-lucide="arrow-right"></i>
+          <div class="replay-step">STORM TRACK (+30m)</div>
+          <i data-lucide="arrow-right"></i>
+          <div class="replay-step">PREDICTED HAZARD (+60m)</div>
+          <i data-lucide="arrow-right"></i>
+          <div class="replay-step">OBSERVED EVENT (VERIFIED)</div>
+        </div>
+
+        <!-- SIDE-BY-SIDE: PREDICTED VS OBSERVED -->
+        <div class="comparison-grid">
+          <div class="comp-box">
+            <div class="comp-head">
+              <span class="text-amber">AI MODEL PREDICTED (0–2 HR)</span>
+              <span class="badge-subtle">ConvectX Spatio-Temporal Model</span>
+            </div>
+            <div class="comp-canvas" id="replay-predicted-canvas">
+              <div class="radar-circle-mock">
+                <div class="mock-blob blob-pred"></div>
+                <div class="mock-arrow"></div>
+                <div class="mock-label" id="rep-pred-label">Predicted 55 dBZ Core @ T+45m (Prayagraj North)</div>
+              </div>
+            </div>
+            <div class="comp-metrics">
+              <div>Predicted Peak dBZ: <strong>55 dBZ</strong></div>
+              <div>Estimated Arrival: <strong>14:42 IST (±4m)</strong></div>
+              <div>Spatial Overlap: <strong>89.2%</strong></div>
+            </div>
+          </div>
+
+          <div class="comp-box">
+            <div class="comp-head">
+              <span class="text-emerald">OBSERVED GROUND TRUTH</span>
+              <span class="badge-subtle">Doppler Weather Radar Actuals</span>
+            </div>
+            <div class="comp-canvas" id="replay-observed-canvas">
+              <div class="radar-circle-mock">
+                <div class="mock-blob blob-obs"></div>
+                <div class="mock-arrow"></div>
+                <div class="mock-label" id="rep-obs-label">Actual 57 dBZ Core Recorded @ 14:45 IST</div>
+              </div>
+            </div>
+            <div class="comp-metrics">
+              <div>Recorded Peak dBZ: <strong>57 dBZ</strong></div>
+              <div>Actual Arrival: <strong>14:45 IST</strong></div>
+              <div>Lead-Time Provided: <strong>45 Minutes Ahead</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="model-note mt-md">* Historical demonstration dataset constructed from calibrated radar archive for prototype evaluation.</div>
+      </div>
+    </div> <!-- /tab-replay -->
+
+
+    <!-- ==============================================
+         TAB 5: MODEL PERFORMANCE & ANALYTICS
+         ============================================== -->
+    <div id="tab-analytics" class="view-panel">
+      <div class="card-panel">
+        <div class="card-header">
+          <div>
+            <h3>MODEL PERFORMANCE &amp; STATISTICAL VALIDATION</h3>
+            <p class="section-desc">Benchmarking ConvectX deep learning models against traditional persistence and numerical weather prediction (NWP) advection baselines.</p>
+          </div>
+          <span class="badge-prototype">PROTOTYPE METRICS</span>
+        </div>
+
+        <!-- 8 METRIC TILES -->
+        <div class="metrics-grid">
+          <div class="metric-tile">
+            <span class="m-label">Precision (0–2h)</span>
+            <span class="m-val text-emerald">0.86</span>
+            <span class="m-comp">+22% over Persistence</span>
+          </div>
+          <div class="metric-tile">
+            <span class="m-label">Recall (Sensitivity)</span>
+            <span class="m-val text-emerald">0.82</span>
+            <span class="m-comp">Captures 82% of rapid CI</span>
+          </div>
+          <div class="metric-tile">
+            <span class="m-label">F1-Score</span>
+            <span class="m-val text-emerald">0.84</span>
+            <span class="m-comp">Harmonic balance</span>
+          </div>
+          <div class="metric-tile">
+            <span class="m-label">ROC-AUC</span>
+            <span class="m-val text-emerald">0.91</span>
+            <span class="m-comp">High discriminatory power</span>
+          </div>
+          <div class="metric-tile">
+            <span class="m-label">Brier Score</span>
+            <span class="m-val text-emerald">0.084</span>
+            <span class="m-comp">Lower = better calibrated</span>
+          </div>
+          <div class="metric-tile">
+            <span class="m-label">MAE (Rainfall Rate)</span>
+            <span class="m-val text-amber">4.2 mm/h</span>
+            <span class="m-comp">vs. 8.6 mm/h NWP base</span>
+          </div>
+          <div class="metric-tile">
+            <span class="m-label">Track Error</span>
+            <span class="m-val text-emerald">6.8 km</span>
+            <span class="m-comp">Mean distance at +60 min</span>
+          </div>
+          <div class="metric-tile">
+            <span class="m-label">Arrival-Time Error</span>
+            <span class="m-val text-emerald">±6.4 min</span>
+            <span class="m-comp">Critical for local alerts</span>
+          </div>
+        </div>
+
+        <!-- BENCHMARK COMPARISON TABLE -->
+        <div class="mt-lg">
+          <h4>Comparative Skill Score vs. Traditional Baselines</h4>
+          <div class="table-responsive">
+            <table class="benchmark-table">
+              <thead>
+                <tr>
+                  <th>Forecast Horizon</th>
+                  <th>ConvectX AI Nowcast (CSI)</th>
+                  <th>Optical Flow / TITAN (CSI)</th>
+                  <th>High-Res NWP (WRF 3km)</th>
+                  <th>Relative AI Skill Improvement</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>+30 Minutes</strong></td>
+                  <td class="text-emerald"><strong>0.79</strong></td>
+                  <td>0.68</td>
+                  <td>0.38</td>
+                  <td class="text-emerald">+16.2%</td>
+                </tr>
+                <tr>
+                  <td><strong>+1 Hour</strong></td>
+                  <td class="text-emerald"><strong>0.67</strong></td>
+                  <td>0.49</td>
+                  <td>0.41</td>
+                  <td class="text-emerald">+36.7%</td>
+                </tr>
+                <tr>
+                  <td><strong>+2 Hours</strong></td>
+                  <td class="text-emerald"><strong>0.54</strong></td>
+                  <td>0.31</td>
+                  <td>0.42</td>
+                  <td class="text-emerald">+74.2%</td>
+                </tr>
+                <tr>
+                  <td><strong>+3 Hours</strong></td>
+                  <td class="text-emerald"><strong>0.46</strong></td>
+                  <td>0.19</td>
+                  <td>0.40</td>
+                  <td class="text-emerald">+142% vs advection</td>
+                </tr>
+                <tr>
+                  <td><strong>+6 Hours</strong></td>
+                  <td class="text-emerald"><strong>0.38</strong></td>
+                  <td>0.08</td>
+                  <td>0.36</td>
+                  <td class="text-emerald">Retains predictive boundary</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="model-note mt-md">
+          * Illustrative prototype metrics for SIH evaluation. Operational validation requires multi-year historical datasets and independent IMD verification.
+        </div>
+      </div>
+    </div> <!-- /tab-analytics -->
+
+
+    <!-- ==============================================
+         TAB 6: SYSTEM STATUS & TELEMETRY
+         ============================================== -->
+    <div id="tab-status" class="view-panel">
+      <div class="card-panel">
+        <div class="card-header">
+          <div>
+            <h3>PROTOTYPE SYSTEM STATUS &amp; HEALTH</h3>
+            <p class="section-desc">Real-time health monitor of microservices, sensor pipelines, and inference cluster.</p>
+          </div>
+          <span class="badge-prototype">SYSTEM TELEMETRY</span>
+        </div>
+
+        <div class="status-grid">
+          <div class="status-card">
+            <div class="sc-head">
+              <span>RADAR FEED</span>
+              <span class="badge-live"><span class="dot-live"></span> ONLINE</span>
+            </div>
+            <div class="sc-val">IMD Doppler Network (12 Radars)</div>
+            <div class="sc-sub">Ingestion Rate: 42 MB/min • 0 dropped packets</div>
+          </div>
+
+          <div class="status-card">
+            <div class="sc-head">
+              <span>SATELLITE FEED</span>
+              <span class="badge-live"><span class="dot-live"></span> ONLINE</span>
+            </div>
+            <div class="sc-val">INSAT-3DR Geostationary</div>
+            <div class="sc-sub">Frame interval: 15 min • Thermal channel OK</div>
+          </div>
+
+          <div class="status-card">
+            <div class="sc-head">
+              <span>LIGHTNING FEED</span>
+              <span class="badge-live"><span class="dot-live"></span> ONLINE</span>
+            </div>
+            <div class="sc-val">Earth Networks LLN Stream</div>
+            <div class="sc-sub">Stream Latency: 1.2s • 184 strikes/min current</div>
+          </div>
+
+          <div class="status-card">
+            <div class="sc-head">
+              <span>DATABASE CLUSTER</span>
+              <span class="badge-live"><span class="dot-live"></span> ONLINE</span>
+            </div>
+            <div class="sc-val">PostgreSQL 16 + PostGIS 3.4</div>
+            <div class="sc-sub">Spatial queries: 4.8ms avg response time</div>
+          </div>
+
+          <div class="status-card">
+            <div class="sc-head">
+              <span>AI INFERENCE ENGINE</span>
+              <span class="badge-live"><span class="dot-live"></span> READY</span>
+            </div>
+            <div class="sc-val">PyTorch TensorRT Cluster</div>
+            <div class="sc-sub">0–6h Grid Inference: 480ms per forward pass</div>
+          </div>
+
+          <div class="status-card">
+            <div class="sc-head">
+              <span>GIS GEO-SERVICE</span>
+              <span class="badge-live"><span class="dot-live"></span> ONLINE</span>
+            </div>
+            <div class="sc-val">Vector Tile Server &amp; GeoServer</div>
+            <div class="sc-sub">200 OK • 60 FPS client rendering</div>
+          </div>
+
+          <div class="status-card">
+            <div class="sc-head">
+              <span>REST / WEBSOCKET API</span>
+              <span class="badge-live"><span class="dot-live"></span> HEALTHY</span>
+            </div>
+            <div class="sc-val">FastAPI Async Gateway</div>
+            <div class="sc-sub">Uptime: 99.98% • Latency: 18ms</div>
+          </div>
+
+          <div class="status-card">
+            <div class="sc-head">
+              <span>ALERT DISPATCHER</span>
+              <span class="badge-live"><span class="dot-live"></span> ARMED</span>
+            </div>
+            <div class="sc-val">Common Alerting Protocol (CAP)</div>
+            <div class="sc-sub">Ready to publish SMS / Webhook warnings</div>
+          </div>
+        </div>
+
+        <div class="telemetry-table-box mt-lg">
+          <h4>Deployment Specifications</h4>
+          <div class="table-responsive">
+            <table class="benchmark-table">
+              <tr>
+                <td><strong>Model Version:</strong> ConvectX-v2.4-HybridTransformer</td>
+                <td><strong>Data Schema Version:</strong> GeoSchema-IN-2026.1</td>
+              </tr>
+              <tr>
+                <td><strong>Last Pipeline Ingestion:</strong> 2 min ago (13:58:12 IST)</td>
+                <td><strong>API Latency (p95):</strong> 24 milliseconds</td>
+              </tr>
+              <tr>
+                <td><strong>Processed Observations Today:</strong> 2,840,192 points</td>
+                <td><strong>Active Web Workers:</strong> 8 Gunicorn / Uvicorn nodes</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="model-note mt-md">* Prototype system status telemetry simulated for SIH demonstration.</div>
+      </div>
+    </div> <!-- /tab-status -->
+
+
+    <!-- ==============================================
+         TAB 7: ABOUT CONVECTX & WHY CONVECTX
+         ============================================== -->
+    <div id="tab-about" class="view-panel">
+      
+      <!-- WHY CONVECTX SECTION -->
+      <div class="card-panel mb-lg">
+        <div class="card-header">
+          <div>
+            <h3>WHY CONVECTX? OVERCOMING SHORT-TERM CONVECTIVE BLIND SPOTS</h3>
+            <p class="section-desc">Understanding why traditional numerical weather prediction struggles with localized 0–6 hour severe convective storms.</p>
+          </div>
+          <span class="badge-prototype">PROBLEM STATEMENT SIH26084</span>
+        </div>
+
+        <div class="two-col-grid">
+          <div class="why-card traditional-card">
+            <div class="why-head">
+              <i data-lucide="x-circle" class="text-crimson"></i>
+              <h4>TRADITIONAL WEATHER INFORMATION</h4>
+            </div>
+            <ul class="why-list">
+              <li><strong>Broad-scale numerical forecast:</strong> NWP models run on 6-to-12-hour assimilation cycles, missing rapid sub-hourly storm evolutions.</li>
+              <li><strong>Limited local spatial detail:</strong> 3 km–12 km grids smooth out intense cloudburst cores and violent 500-meter microbursts.</li>
+              <li><strong>Spin-up delay:</strong> Physical atmospheric equations require 1–3 hours of simulation spin-up, creating a critical nowcasting blind spot.</li>
+              <li><strong>Short-lived convective evolution:</strong> Convective cells form, drop lethal lightning, and dissipate in 30–60 minutes—well before standard models refresh.</li>
+            </ul>
+          </div>
+
+          <div class="why-card convectx-card">
+            <div class="why-head">
+              <i data-lucide="check-circle-2" class="text-emerald"></i>
+              <h4>CONVECTX AI NOWCASTING APPROACH</h4>
+            </div>
+            <ul class="why-list">
+              <li><strong>Multi-source real-time observation:</strong> Ingests Doppler radar, INSAT cloud-top cooling, and lightning surges simultaneously.</li>
+              <li><strong>Real-time feature fusion:</strong> Aligns disparate physical feeds into a unified 500-meter geo-temporal tensor grid every 5 minutes.</li>
+              <li><strong>Early Convective Initiation (CI):</strong> Detects explosive updrafts before heavy rain reaches the surface, adding 30–45 min of lead time.</li>
+              <li><strong>0–6 Hour Spatio-Temporal Nowcasting:</strong> Deep neural models extrapolate storm trajectories, cell decay, and new initiation.</li>
+              <li><strong>Hyperlocal Risk &amp; Early Warnings:</strong> Generates actionable, coordinate-specific alerts for district emergency teams and citizens.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARCHITECTURE & TECH STACK -->
+      <div class="two-col-grid">
+        <div class="card-panel">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="layers" class="text-emerald"></i>
+              <h4>End-to-End System Architecture</h4>
+            </div>
+            <span class="badge-subtle">Data to Action</span>
+          </div>
+          <div class="arch-flow">
+            <div class="arch-node">DATA SOURCES (Radar, INSAT-3DR, Lightning, AWS)</div>
+            <div class="arch-pipe">↓</div>
+            <div class="arch-node">INGESTION &amp; SPATIAL-TEMPORAL ALIGNMENT</div>
+            <div class="arch-pipe">↓</div>
+            <div class="arch-node">CONVECTIVE INITIATION &amp; FEATURE EXTRACTION</div>
+            <div class="arch-pipe">↓</div>
+            <div class="arch-node">DEEP LEARNING NOWCAST ENGINE (0–6 Hours)</div>
+            <div class="arch-pipe">↓</div>
+            <div class="arch-node">PLATT-CALIBRATED MULTI-HAZARD RISK ENGINE</div>
+            <div class="arch-pipe">↓</div>
+            <div class="arch-node">TITAN CELL TRACKING &amp; UNCERTAINTY CONES</div>
+            <div class="arch-pipe">↓</div>
+            <div class="arch-node">GIS VISUALIZATION &amp; LOCATION EARLY WARNINGS</div>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="cpu" class="text-amber"></i>
+              <h4>Technology Stack Ready for Operational Scale</h4>
+            </div>
+            <span class="badge-subtle">Open-Source &amp; Scalable</span>
+          </div>
+
+          <div class="stack-list">
+            <div class="stack-item">
+              <strong>Frontend Intelligence Dashboard:</strong>
+              <span>Vanilla ES6 / React Ready • Tailwind Glassmorphic CSS • Leaflet GIS</span>
+            </div>
+            <div class="stack-item">
+              <strong>Backend &amp; API Service Layer:</strong>
+              <span>FastAPI (Python 3.11 Async) • Celery Distributed Tasks • Redis Caching</span>
+            </div>
+            <div class="stack-item">
+              <strong>Database &amp; Spatial Store:</strong>
+              <span>PostgreSQL 16 with PostGIS 3.4 • TimescaleDB for time-series telemetry</span>
+            </div>
+            <div class="stack-item">
+              <strong>AI &amp; Deep Learning Frameworks:</strong>
+              <span>PyTorch • TorchScript • Scikit-learn • TensorRT acceleration</span>
+            </div>
+            <div class="stack-item">
+              <strong>Geospatial &amp; Meteorological Tooling:</strong>
+              <span>GeoPandas • Shapely • Rasterio • Xarray • Py-ART (Python ARM Radar Toolkit)</span>
+            </div>
+            <div class="stack-item">
+              <strong>Standards Compliance:</strong>
+              <span>WMO BUFR format • NetCDF-CF • Common Alerting Protocol (CAP 1.2)</span>
+            </div>
+          </div>
+
+          <div class="api-demo-box mt-md">
+            <div class="api-header">
+              <span>API Gateway Ready: Ready to connect to FastAPI Backend</span>
+              <span class="badge-live">MOCK ENDPOINTS READY</span>
+            </div>
+            <div class="code-snippet">
+              <code>GET /api/v1/weather/current?lat=25.4358&amp;lon=81.8463</code><br />
+              <code>GET /api/v1/forecast/nowcast?horizon=360</code><br />
+              <code>GET /api/v1/risk/evaluate?cell_id=A102</code><br />
+              <code>GET /api/v1/history/replay?event_id=uttarakhand-2023</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- /tab-about -->
+
+  </main>
+
+  <!-- RESPONSIBLE USE & LEGAL SAFETY FOOTER -->
+  <footer class="app-footer">
+    <div class="footer-badge">
+      <i data-lucide="shield-alert" class="text-amber"></i>
+      <span>RESPONSIBLE USE &amp; METEOROLOGICAL DISCLAIMER</span>
+    </div>
+    <p class="disclaimer-text">
+      <strong>Prototype model estimates for demonstration purposes only (SIH Problem ID: SIH26084).</strong> This system is not an official weather warning service. Simulated/demo data is used to illustrate AI convective initiation, cell tracking, and nowcasting capabilities. Operational deployment requires validated deep learning models, authorized data feeds from the India Meteorological Department (IMD) / ISRO, and integration with state and national disaster management authorities.
+    </p>
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- External Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
